@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Family Fest Ticket Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --ink:#14302c; --muted:#5b716d; --line:#d6e0dd;
+  --accent:#0f6b5c; --accent-ink:#ffffff; --gold:#f2a516; --gold-soft:#fff3d6; --danger:#b3261e; --ok-soft:#e1f3ee;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px;display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:12px}
+.eyebrow{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);line-height:1.05;margin:4px 0 0}
+.counter-pick{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.counter-pick span{font-size:14px;color:var(--muted);margin-right:4px}
+.chip{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 16px;font:700 15px var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.status{display:flex;align-items:center;gap:10px;border-radius:12px;padding:10px 14px;font-weight:700;font-size:15px;border:2px solid transparent}
+.status .dot{width:12px;height:12px;border-radius:50%;flex:none;background:currentColor}
+.status.ok{background:var(--ok-soft);color:var(--accent)}
+.status.wait{background:var(--gold-soft);color:#7a4d00;border-color:var(--gold)}
+.status.err{background:#fde8e6;color:var(--danger);border-color:var(--danger)}
+.stub{background:var(--surface);border:2px solid var(--line);border-radius:18px;display:grid;grid-template-columns:1fr auto;overflow:hidden}
+.stub-main{padding:22px;display:grid;gap:16px;min-width:0}
+.stub-side{background:var(--gold-soft);border-left:2px dashed var(--gold);padding:22px;display:grid;align-content:center;justify-items:center;gap:4px;min-width:220px;text-align:center}
+.stub h2{font-family:var(--display);font-size:20px;margin:0}
+.fields{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+label{display:grid;gap:6px;font-weight:700;font-size:15px}
+input[type=text],input[type=number],input[type=search],input[type=password]{font:400 20px var(--body);padding:12px 14px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,107,92,.25)}
+.qty{display:flex;gap:6px}
+.qty input{text-align:center;font-weight:700}
+.step{width:52px;flex:none;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;font:800 24px var(--display);cursor:pointer}
+.price-row{font-size:15px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.price-row input{width:110px;font-size:16px;padding:6px 10px}
+.amount-label{font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.amount{font-family:var(--display);font-weight:800;font-size:40px;font-variant-numeric:tabular-nums;line-height:1}
+.save{margin-top:12px;width:100%;background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:16px 18px;font:800 20px var(--display);cursor:pointer}
+.save:disabled{opacity:.5}
+.hint{font-size:14px;color:var(--muted);margin:0}
+.msg{min-height:1.4em;font-weight:700;font-size:15px;margin:0}
+.msg.ok{color:var(--accent)} .msg.err{color:var(--danger)}
+.totals{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tot{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:14px 18px}
+.tot b{display:block;font-family:var(--display);font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.tot span{font-size:14px;color:var(--muted);font-weight:700}
+.tot.big{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tot.big span{color:inherit;opacity:.85}
+.reg-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.reg-head h2{font-family:var(--display);font-size:22px;margin:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools input{width:200px;font-size:16px;padding:9px 12px}
+.btn{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 14px;font:700 15px var(--body);cursor:pointer}
+.btn:hover,.step:hover{border-color:var(--accent)}
+.table-box{overflow-x:auto;background:var(--surface);border:2px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:640px}
+th{text-align:left;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 14px;border-bottom:2px solid var(--line);background:var(--bg)}
+td{padding:10px 14px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+.num{text-align:right}
+td.no{color:var(--muted);font-weight:700;width:48px}
+.who{font-size:13px;font-weight:700;background:var(--gold-soft);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pend{font-size:12px;font-weight:700;color:#7a4d00;margin-left:6px}
+.time{color:var(--muted);font-size:14px;white-space:nowrap}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font:700 14px var(--body);padding:6px 8px;border-radius:8px}
+.x:hover{color:var(--danger);background:var(--bg)}
+.confirm{display:flex;gap:6px;align-items:center;font-size:14px;white-space:nowrap}
+.confirm .yes{background:var(--danger);color:#fff;border:0;border-radius:8px;padding:6px 10px;font:700 14px var(--body);cursor:pointer}
+.empty{padding:36px 18px;text-align:center;color:var(--muted)}
+.pin{position:fixed;inset:0;background:rgba(10,30,27,.6);display:grid;place-items:center;padding:16px;z-index:20}
+.pin form{background:var(--surface);border-radius:18px;padding:24px;width:min(380px,100%);display:grid;gap:14px}
+.pin h2{font-family:var(--display);margin:0}
+[hidden]{display:none!important}
+button:focus-visible,.chip:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.print-only{display:none}
+@media (max-width:680px){
+  .stub{grid-template-columns:1fr}
+  .stub-side{border-left:0;border-top:2px dashed var(--gold);min-width:0}
+  .fields{grid-template-columns:1fr}
+  .totals{grid-template-columns:1fr 1fr}
+  .tot.big{grid-column:1/-1}
+}
+@media print{
+  body{background:#fff;font-size:12px}
+  .stub,.counter-pick,.status,.tools,.x,.confirm,.hint,#msg{display:none!important}
+  .print-only{display:block}
+  table{min-width:0}
+  .table-box,.tot{border-color:#999}
+  .tot.big{background:#fff;color:#000;border-color:#000}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Eventmaniapk · Ticket desk</div>
+      <h1>Family Fest &amp; Expo</h1>
+    </div>
+    <div class="counter-pick" role="group" aria-label="Who is entering">
+      <span>I am:</span>
+      <button class="chip" id="c1" data-c="Counter 1" aria-pressed="false">Counter 1</button>
+      <button class="chip" id="c2" data-c="Counter 2" aria-pressed="false">Counter 2</button>
+    </div>
+  </header>
+
+  <div id="status" class="status wait" role="status"><span class="dot"></span><span id="statusText">Connecting…</span></div>
+
+  <form class="stub" id="form" autocomplete="off">
+    <div class="stub-main">
+      <h2>New ticket sale</h2>
+      <div class="fields">
+        <label for="name">Customer name
+          <input type="text" id="name" placeholder="Type the name here">
+        </label>
+        <label for="qty">Number of tickets
+          <div class="qty">
+            <button type="button" class="step" id="minus" aria-label="One less">−</button>
+            <input type="number" id="qty" min="1" value="1" inputmode="numeric">
+            <button type="button" class="step" id="plus" aria-label="One more">+</button>
+          </div>
+        </label>
+      </div>
+      <div class="price-row">
+        <label for="price" style="display:flex;align-items:center;gap:8px;font-weight:400">Price per ticket: Rs
+          <input type="number" id="price" min="0" value="500" inputmode="numeric">
+        </label>
+      </div>
+      <p class="hint">Type the name, set tickets, then press <b>Save</b> or the Enter key.</p>
+      <p class="msg" id="msg"></p>
+    </div>
+    <div class="stub-side">
+      <div class="amount-label">Amount to collect</div>
+      <div class="amount" id="amount">Rs 500</div>
+      <button type="submit" class="save" id="save">Save ticket</button>
+    </div>
+  </form>
+
+  <p class="print-only" id="printDate"></p>
+  <section class="totals" aria-label="Totals">
+    <div class="tot"><span>Customers</span><b id="tCust">0</b></div>
+    <div class="tot"><span>Tickets sold</span><b id="tQty">0</b></div>
+    <div class="tot big"><span>Total sale</span><b id="tAmt">Rs 0</b></div>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <div class="reg-head">
+      <h2>All sales</h2>
+      <div class="tools">
+        <input type="search" id="search" placeholder="Find a name" aria-label="Find a name">
+        <button class="btn" id="dl" type="button">Download for Excel</button>
+        <button class="btn" id="print" type="button">Print</button>
+      </div>
+    </div>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>No</th><th>Name</th><th class="num">Tickets</th><th class="num">Price</th><th class="num">Amount</th><th>By</th><th>Time</th><th></th></tr></thead>
+        <tbody id="rows"><tr><td colspan="8" class="empty">Loading sales…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<div class="pin" id="pinBox" hidden>
+  <form id="pinForm">
+    <h2>Enter desk PIN</h2>
+    <p class="hint">Ask the organiser for the PIN. This laptop will remember it.</p>
+    <input type="password" id="pinInput" inputmode="numeric" placeholder="PIN" aria-label="PIN">
+    <p class="msg err" id="pinMsg"></p>
+    <button class="save" type="submit">Open ticket desk</button>
+  </form>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const fmt = n => "Rs " + Number(n||0).toLocaleString("en-PK");
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const K = {cache:"ffe-cache", pending:"ffe-pending", dels:"ffe-pending-del", counter:"ffe-counter", pin:"ffe-pin"};
+  const get = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } };
+  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+
+  // State. Every sale is written to this laptop first, then uploaded.
+  let server = get(K.cache, []);     // last list from the server
+  let pending = get(K.pending, []);  // saved here, not yet uploaded
+  let dels = get(K.dels, []);        // removals not yet uploaded
+  let counter = get(K.counter, "");
+  let pin = get(K.pin, "");
+  let confirmId = null, loaded = server.length > 0, lastOk = 0, lastErr = "";
+
+  function newId(){ return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10); }
+
+  function allSales(){
+    const map = new Map();
+    server.forEach(s => map.set(s.id, Object.assign({}, s)));
+    pending.forEach(s => map.set(s.id, Object.assign({}, s, {_pending:true})));
+    return [...map.values()].filter(s => !s.removed && !dels.includes(s.id)).sort((a,b) => (a.at||0)-(b.at||0));
+  }
+
+  // Counter chips
+  function paintCounter(){ ["c1","c2"].forEach(id => $(id).setAttribute("aria-pressed", String($(id).dataset.c === counter))); }
+  ["c1","c2"].forEach(id => $(id).addEventListener("click", () => { counter = $(id).dataset.c; put(K.counter, counter); paintCounter(); $("name").focus(); }));
+  paintCounter();
+
+  // Amount
+  const qtyVal = () => { const q = parseInt($("qty").value,10); return q > 0 ? q : 0; };
+  const priceVal = () => { const p = parseFloat($("price").value); return p >= 0 ? p : 0; };
+  const updAmount = () => { $("amount").textContent = fmt(qtyVal()*priceVal()); };
+  $("qty").addEventListener("input", updAmount);
+  $("price").addEventListener("input", updAmount);
+  $("plus").addEventListener("click", () => { $("qty").value = qtyVal()+1; updAmount(); });
+  $("minus").addEventListener("click", () => { $("qty").value = Math.max(1, qtyVal()-1); updAmount(); });
+
+  function say(t, k){ $("msg").textContent = t; $("msg").className = "msg " + (k||""); }
+
+  function paintStatus(){
+    const n = pending.length + dels.length, el = $("status");
+    if (n === 0 && lastOk){
+      el.className = "status ok";
+      $("statusText").textContent = "All sales saved to the server. Last checked " + new Date(lastOk).toLocaleTimeString([], {hour:"numeric", minute:"2-digit", second:"2-digit"});
+    } else if (n > 0){
+      el.className = "status wait";
+      $("statusText").textContent = n + " waiting to upload (internet problem). They are safe on this laptop. Keep this page open and it will upload by itself.";
+    } else if (lastErr){
+      el.className = "status err";
+      $("statusText").textContent = lastErr;
+    } else {
+      el.className = "status wait";
+      $("statusText").textContent = "Connecting…";
+    }
+  }
+
+  function render(){
+    const list = allSales();
+    $("tCust").textContent = list.length;
+    $("tQty").textContent = list.reduce((a,s)=>a+(+s.qty||0),0).toLocaleString("en-PK");
+    $("tAmt").textContent = fmt(list.reduce((a,s)=>a+(+s.amount||0),0));
+    paintStatus();
+    if (!loaded && !list.length) return;
+    if (!list.length){ $("rows").innerHTML = '<tr><td colspan="8" class="empty">No tickets yet. Fill in the box above and press Save.</td></tr>'; return; }
+    const q = $("search").value.trim().toLowerCase();
+    let html = "";
+    list.forEach((s,i) => {
+      if (q && !String(s.name).toLowerCase().includes(q)) return;
+      const t = s.at ? new Date(s.at).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}) : "";
+      const act = confirmId === s.id
+        ? '<span class="confirm">Remove? <button class="yes" data-yes="'+esc(s.id)+'">Yes</button><button class="x" data-no="1">No</button></span>'
+        : '<button class="x" data-del="'+esc(s.id)+'">Remove</button>';
+      html += '<tr><td class="no">'+(i+1)+'</td><td>'+esc(s.name)+(s._pending?'<span class="pend">uploading…</span>':'')+'</td><td class="num">'+s.qty+'</td><td class="num">'+fmt(s.price)+'</td><td class="num"><b>'+fmt(s.amount)+'</b></td><td>'+(s.counter?'<span class="who">'+esc(s.counter)+'</span>':'')+'</td><td class="time">'+t+'</td><td>'+act+'</td></tr>';
+    });
+    $("rows").innerHTML = html || '<tr><td colspan="8" class="empty">No name matches that search.</td></tr>';
+  }
+  $("search").addEventListener("input", render);
+
+  // Server calls
+  async function api(method, path, body){
+    const r = await fetch(path, {method, headers: {"Content-Type":"application/json", "x-desk-pin": pin}, body: body ? JSON.stringify(body) : undefined, cache:"no-store"});
+    if (r.status === 401){ showPin(); const e = new Error("pin"); e.pin = true; throw e; }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok){ const e = new Error(j.error || ("Server error " + r.status)); e.status = r.status; throw e; }
+    return j;
+  }
+
+  let syncing = false;
+  async function sync(){
+    if (syncing) return; syncing = true;
+    try {
+      while (pending.length){
+        const s = pending[0];
+        const {sale} = await api("POST", "/api/sales", s);
+        const i = server.findIndex(x => x.id === sale.id);
+        if (i >= 0) server[i] = sale; else server.push(sale);
+        pending.shift(); put(K.pending, pending); put(K.cache, server);
+      }
+      while (dels.length){
+        try { await api("DELETE", "/api/sales?id=" + encodeURIComponent(dels[0])); }
+        catch(e){ if (e.status !== 404) throw e; }
+        dels.shift(); put(K.dels, dels);
+      }
+      const {sales} = await api("GET", "/api/sales");
+      server = sales; put(K.cache, server);
+      loaded = true; lastOk = Date.now(); lastErr = "";
+    } catch(e){
+      if (!e.pin) lastErr = e.status === 500 ? ("Server problem: " + e.message) : "No internet right now. Sales are kept on this laptop and will upload when it's back.";
+    } finally { syncing = false; render(); }
+  }
+
+  // Save
+  $("form").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = $("name").value.trim(), qty = qtyVal(), price = priceVal();
+    if (!name){ say("Please type the customer's name first.", "err"); $("name").focus(); return; }
+    if (!qty){ say("Number of tickets must be 1 or more.", "err"); $("qty").focus(); return; }
+    if (!counter){ say("First tap Counter 1 or Counter 2 at the top, then press Save again.", "err"); return; }
+    const rec = {id:newId(), name, qty, price, amount:qty*price, counter, at:Date.now()};
+    pending.push(rec); put(K.pending, pending);
+    say("Saved: " + name + " · " + qty + " ticket" + (qty>1?"s":"") + " · " + fmt(rec.amount), "ok");
+    $("name").value = ""; $("qty").value = 1; updAmount(); $("name").focus();
+    render(); sync();
+  });
+
+  // Remove (with in-page confirm)
+  $("rows").addEventListener("click", e => {
+    const d = e.target.closest("[data-del]"), y = e.target.closest("[data-yes]"), n = e.target.closest("[data-no]");
+    if (d){ confirmId = d.dataset.del; render(); }
+    else if (n){ confirmId = null; render(); }
+    else if (y){
+      const id = y.dataset.yes; confirmId = null;
+      const pi = pending.findIndex(s => s.id === id);
+      if (pi >= 0 && !server.some(s => s.id === id)){ pending.splice(pi,1); put(K.pending, pending); }
+      else { dels.push(id); put(K.dels, dels); }
+      say("Sale removed.", "ok"); render(); sync();
+    }
+  });
+
+  // Download CSV
+  $("dl").addEventListener("click", () => {
+    const list = allSales();
+    const rows = [["No","Name","Qty Of Ticket","Price Of Ticket","Amount","Counter","Time"]];
+    list.forEach((s,i) => rows.push([i+1, s.name, s.qty, s.price, s.amount, s.counter||"", s.at ? new Date(s.at).toLocaleString() : ""]));
+    rows.push([]);
+    rows.push(["", "Total Sale Tickets", list.reduce((a,s)=>a+(+s.qty||0),0), "Total Sale", list.reduce((a,s)=>a+(+s.amount||0),0)]);
+    const csv = "\ufeff" + rows.map(r => r.map(v => { const t = String(v ?? ""); return /[",\n]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; }).join(",")).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+    a.download = "Family-Fest-ticket-sales-" + new Date().toISOString().slice(0,10) + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  $("print").addEventListener("click", () => { $("printDate").textContent = "Printed " + new Date().toLocaleString(); window.print(); });
+
+  // PIN
+  function showPin(){ $("pinBox").hidden = false; $("pinMsg").textContent = pin ? "That PIN didn't work. Try again." : ""; $("pinInput").focus(); }
+  $("pinForm").addEventListener("submit", e => { e.preventDefault(); pin = $("pinInput").value.trim(); put(K.pin, pin); $("pinBox").hidden = true; sync(); });
+
+  // Warn before closing if something hasn't uploaded
+  window.addEventListener("beforeunload", e => { if (pending.length || dels.length){ e.preventDefault(); e.returnValue = ""; } });
+  window.addEventListener("online", sync);
+  setInterval(sync, 5000);
+
+  updAmount(); render(); sync(); $("name").focus();
+})();
+</script>
+</body>
+</html>
