@@ -124,9 +124,9 @@ button:focus-visible,.chip:focus-visible{outline:3px solid var(--gold);outline-o
         </label>
         <label for="qty">Number of tickets
           <div class="qty">
-            <button type="button" class="step" id="minus" aria-label="One less">−</button>
+            <button type="button" class="step" id="minus" tabindex="-1" aria-label="One less">−</button>
             <input type="number" id="qty" min="1" value="1" inputmode="numeric">
-            <button type="button" class="step" id="plus" aria-label="One more">+</button>
+            <button type="button" class="step" id="plus" tabindex="-1" aria-label="One more">+</button>
           </div>
         </label>
       </div>
@@ -195,7 +195,7 @@ button:focus-visible,.chip:focus-visible{outline:3px solid var(--gold);outline-o
   let dels = get(K.dels, []);        // removals not yet uploaded
   let counter = get(K.counter, "");
   let pin = get(K.pin, "");
-  let confirmId = null, loaded = server.length > 0, lastOk = 0, lastErr = "";
+  let confirmId = null, loaded = server.length > 0, lastOk = 0, lastErr = "", lastSig = "";
 
   function newId(){ return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10); }
 
@@ -219,6 +219,8 @@ button:focus-visible,.chip:focus-visible{outline:3px solid var(--gold);outline-o
   $("price").addEventListener("input", updAmount);
   $("plus").addEventListener("click", () => { $("qty").value = qtyVal()+1; updAmount(); });
   $("minus").addEventListener("click", () => { $("qty").value = Math.max(1, qtyVal()-1); updAmount(); });
+  // Keep the typing cursor where it is, so Enter always saves
+  ["plus","minus"].forEach(id => $(id).addEventListener("mousedown", e => e.preventDefault()));
 
   function say(t, k){ $("msg").textContent = t; $("msg").className = "msg " + (k||""); }
 
@@ -246,8 +248,11 @@ button:focus-visible,.chip:focus-visible{outline:3px solid var(--gold);outline-o
     $("tAmt").textContent = fmt(list.reduce((a,s)=>a+(+s.amount||0),0));
     paintStatus();
     if (!loaded && !list.length) return;
-    if (!list.length){ $("rows").innerHTML = '<tr><td colspan="8" class="empty">No tickets yet. Fill in the box above and press Save.</td></tr>'; return; }
+    if (!list.length){ lastSig = ""; $("rows").innerHTML = '<tr><td colspan="8" class="empty">No tickets yet. Fill in the box above and press Save.</td></tr>'; return; }
     const q = $("search").value.trim().toLowerCase();
+    const sig = JSON.stringify([list, q, confirmId]);
+    if (sig === lastSig) return;
+    lastSig = sig;
     let html = "";
     list.forEach((s,i) => {
       if (q && !String(s.name).toLowerCase().includes(q)) return;
